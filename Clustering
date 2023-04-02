@@ -1,0 +1,127 @@
+import random 
+import numpy as np 
+import pandas as pd
+import matplotlib.pyplot as plt 
+from sklearn.cluster import KMeans 
+from sklearn.datasets import make_blobs 
+%matplotlib inline
+
+
+cust_df = pd.read_csv(r"C:\Users\tannaz hafezi\.jupyter\Customer.csv")
+cust_df.head()
+
+df = cust_df.drop('CustomerID', axis=1)
+df.head()
+
+from sklearn import preprocessing
+label_encoder = preprocessing.LabelEncoder()
+df['Gender']= label_encoder.fit_transform(df['Gender'])
+
+df.info()
+
+
+#K-Means
+#Pre-processing
+from sklearn.preprocessing import StandardScaler
+X = df.values[:,:]
+Clus_dataSet = StandardScaler().fit_transform(X)
+Clus_dataSet
+
+#Modeling
+clusterNum = 4
+k_means = KMeans(init = "k-means++", n_clusters = clusterNum, n_init = 12)
+k_means.fit(X)
+labels = k_means.labels_
+print(labels)
+
+#Insights : We assign the labels to each row in dataframe.
+
+df["Clus_km"] = labels
+df.head(5)
+
+#We can easily check the centroid values by averaging the features in each cluster.
+df.groupby('Clus_km').mean()
+
+#Now, let's look at the distribution of customers based on their age and Spending Score:
+area = np.pi * ( X[:, 1])**2  
+plt.scatter(X[:, 1], X[:, 2], s=area, c=labels.astype(np.float), alpha=0.2)
+plt.xlabel('Age', fontsize=10)
+plt.ylabel('Annual Income', fontsize=10)
+
+plt.show()
+
+from mpl_toolkits.mplot3d import Axes3D 
+fig = plt.figure(1, figsize=(8, 6))
+plt.clf()
+ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
+
+plt.cla()
+ax.set_xlabel('Gender')
+ax.set_ylabel('Age')
+ax.set_zlabel('Annual Income')
+
+ax.scatter(X[:, 0], X[:, 1], X[:, 2], c= labels.astype(np.float))
+
+#Hierarchical Clustering
+import matplotlib.pyplot as plt
+import pandas as pd
+%matplotlib inline
+import numpy as np
+from sklearn.cluster import AgglomerativeClustering
+
+cluster = AgglomerativeClustering(n_clusters=2, affinity='euclidean', linkage='ward')
+cluster.fit_predict(X)
+
+plt.scatter(X[:,1],X[:,2], c=cluster.labels_, cmap='rainbow')
+
+import scipy.cluster.hierarchy as shc
+
+plt.figure(figsize=(10, 7))
+plt.title("Customer Dendograms")
+dend = shc.dendrogram(shc.linkage(X, method='ward'))
+
+from sklearn.cluster import AgglomerativeClustering
+cluster = AgglomerativeClustering(n_clusters=5, affinity='euclidean', linkage='ward')
+cluster.fit_predict(X)
+
+# Age VS Spending Score
+plt.figure(figsize=(10, 7))
+plt.scatter(X[:,1], X[:,3], c=cluster.labels_, cmap='rainbow')
+
+##DBSCAN
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+df = pd.read_csv(r"C:\Users\tannaz hafezi\.jupyter\Customer.csv")
+df.isna().sum()
+df.head()
+df.info()
+
+customers=df.drop(columns=["CustomerID"])
+array=customers.values
+array
+
+from sklearn import preprocessing
+label_encoder = preprocessing.LabelEncoder()
+customers['Gender']= label_encoder.fit_transform(customers['Gender'])
+
+
+
+from sklearn.preprocessing import StandardScaler
+stsclr=StandardScaler().fit(customers)
+norm_data=stsclr.transform(customers)
+#DBSCAN clustering
+from sklearn.cluster import DBSCAN
+model=DBSCAN(eps=0.8,min_samples=6).fit(norm_data)
+clusters=pd.DataFrame(model.labels_,columns=['clusters'])
+clusters.value_counts()
+#-1 cluster represents outliers which means we have 80 datapts as outliers
+final_data=pd.concat([clusters,df],axis=1)
+final_data.groupby(final_data.clusters).sum()
+
+
+
+
+
+
+
